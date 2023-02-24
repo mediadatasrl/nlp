@@ -1,7 +1,7 @@
 # nlp
 
 
-per installare da macchine di sviluppo (Docker Descktop): 
+per installare da macchine di sviluppo (Docker Desktop): 
 
 $ docker-compose build
 $ docker-compose up -d
