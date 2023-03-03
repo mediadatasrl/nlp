@@ -61,14 +61,6 @@ def extract_ner():
 
 
     return make_response(jsonify(ret), 200)
-    ret = ""
-    for ent in doc.ents:
-        ret += ent.label_
-        ret += " | "
-        ret += ent.text
-
-    return ret
-
 
 if __name__ == '__main__':
 	app.run(host='0.0.0.0', port=8100)
