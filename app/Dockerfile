@@ -16,6 +16,8 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 RUN python -m spacy download it_core_news_lg
 RUN python -m spacy download es_core_news_lg
 RUN python -m spacy download ca_core_news_lg
+RUN python -m spacy download fr_core_news_lg
+RUN python -m spacy download en_core_web_lg
 
 COPY . /app
 
