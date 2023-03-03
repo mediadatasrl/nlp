@@ -14,6 +14,8 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 
 #installo i modelli di spacy
 RUN python -m spacy download it_core_news_lg
+RUN python -m spacy download es_core_news_lg
+RUN python -m spacy download ca_core_news_lg
 
 COPY . /app
 
@@ -21,11 +23,6 @@ ENTRYPOINT ["python3"]
 CMD ["app.py"]
 
 FROM builder as dev-envs
-
-#RUN <<EOF
-#apk update
-#apk add git
-#EOF
 
 RUN <<EOF
 addgroup -S docker
