@@ -1,12 +1,17 @@
 version: '3.4'
 
 services:
-  nlp-service: 
+  flaskapp:
+    container_name: nlp-services
+    image: flaskapp
     build:
-      context: app
-      target: builder
-    # flask requires SIGINT to stop gracefully
-    # (default stop signal from Compose is SIGTERM)
-    stop_signal: SIGINT
+      context: .
+      dockerfile: ./Dockerfile
+    #command: ["sh", "-c", "python -m flask run --no-debugger --no-reload --host 0.0.0.0 --port 5002"]
     ports:
-      - '8100:8100'
+      - 127.0.0.1:5010:80
+    environment:
+      - FLASK_APP=main.py
+        #    volumes:
+        #      - ./app/static/:/app/app/static
+

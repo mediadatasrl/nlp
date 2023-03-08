@@ -1,10 +1,6 @@
-from flask import Flask, request, jsonify, make_response, json
-#from spacy import displacy
-from spacy.lang.it import Italian
-from spacy.lang.es import Spanish
-from spacy.lang.ca import Catalan
-from spacy.lang.fr import French
-from spacy.lang.en import English
+from flask import request, jsonify, make_response, json
+from app import app
+from functools import wraps
 
 import it_core_news_lg
 import es_core_news_lg
@@ -14,7 +10,6 @@ import en_core_web_lg
 import spacy_fastlang
 
 
-app = Flask(__name__)
 nlp_it = it_core_news_lg.load()
 nlp_es = es_core_news_lg.load()
 nlp_ca = ca_core_news_lg.load()
@@ -26,7 +21,27 @@ nlp_es.add_pipe("language_detector")
 
 @app.route('/')
 def hello():
-	return "Hello New World!"
+    return "Hello New World!"
+
+
+@app.route('/ping')
+def ping():
+    return make_response('pong', 200)
+
+
+def analyze(f):
+    @wraps(f)
+    def wrap(*args,**kwargs):
+        content_type = request.headers.get('Content-Type')
+        if (content_type != 'application/json'):
+            return "Unsopported Content-type", 403
+
+        json = request.json
+        doc = extract_ner_es(json['body'])
+        request.doc = doc
+        return f(*args, **kwargs)
+    return wrap
+
 
 def extract_ner_it(text):
     return nlp_it(text)
@@ -44,27 +59,19 @@ def extract_ner_en(text):
     return nlp_en(text)
 
 @app.route('/ner', methods=['POST'])
+@analyze
 def extract_ner():
-    content_type = request.headers.get('Content-Type')
-    if (content_type == 'application/json'):
-        json = request.json
-    else:
-        return make_response(jsonify([ "Content-Type not supported" ]), 403)
 
-    json = request.json
-    #return make_response(json, 403)
-    #text = request.form.get('q')
-    text = json['body']
-    doc = extract_ner_es(text)
-   
+    doc = request.doc
+
     if doc._.language == 'it':
-        doc = extract_ner_it(text)
+        doc = extract_ner_it(request.json['body'])
     elif doc._.language == 'ca':
-        doc = extract_ner_ca(text)
+        doc = extract_ner_ca(request.json['body'])
     elif doc._.language == 'fr':
-        doc = extract_ner_fr(text)
+        doc = extract_ner_fr(request.json['body'])
     elif doc._.language == 'en':
-        doc = extract_ner_en(text)
+        doc = extract_ner_en(request.json['body'])
     elif doc._.language == 'es':
         doc = doc
     else:
@@ -78,7 +85,12 @@ def extract_ner():
 
     return make_response(jsonify(ret), 200)
 
-if __name__ == '__main__':
-	app.run(host='0.0.0.0', port=8100)
 
+@app.route('/lang', methods=['POST'])
+@analyze
+def extract_lang():
+    return make_response(jsonify(request.doc._.language), 200)
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5010)
 
